@@ -3,17 +3,17 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 
 const canvas = document.querySelector('#webgl');
-const progressLine = document.querySelector('.meter span');
-const progressValue = document.querySelector('.hud-value');
+const velocityLine = document.querySelector('.meter span');
+const velocityValue = document.querySelector('.hud-value');
 const cursorDot = document.querySelector('.cursor-dot');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f4f1);
-scene.fog = new THREE.Fog(0xf4f4f1, 10, 52);
+scene.fog = new THREE.Fog(0xf4f4f1, 14, 44);
 
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 90);
-camera.position.set(0, 0, 12);
+const camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 0.1, 80);
+camera.position.set(0, 0.12, 15.5);
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -25,68 +25,82 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-scene.add(new THREE.AmbientLight(0xffffff, 2.25));
-const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
-keyLight.position.set(-3, 5, 7);
+scene.add(new THREE.AmbientLight(0xffffff, 2.6));
+const keyLight = new THREE.DirectionalLight(0xffffff, 3.4);
+keyLight.position.set(-2.5, 4.5, 7);
 scene.add(keyLight);
+const rimLight = new THREE.DirectionalLight(0xffffff, 1.2);
+rimLight.position.set(4, -2, -3);
+scene.add(rimLight);
 
-const editorialGroup = new THREE.Group();
-scene.add(editorialGroup);
+const carousel = new THREE.Group();
+carousel.position.set(1.28, 0.38, 0);
+scene.add(carousel);
 
 const projectTitles = [
-  'DOLLY',
-  'DEAL ADVISOR',
-  'NETWORK SOLUTION',
-  'SYSTEMS',
-  'STRATEGY',
-  'CRAFT',
-  'RESEARCH',
-  'PROTOTYPES'
+  ['DOLLY', 'Design System'],
+  ['KBB', 'Deal Advisor'],
+  ['NETGEAR', 'Network Solution'],
+  ['SYSTEMS', 'Component Logic'],
+  ['STRATEGY', 'Product Direction'],
+  ['CRAFT', 'Interface Detail'],
+  ['RESEARCH', 'Human Signals'],
+  ['MOTION', 'Spatial Prototype'],
+  ['UX', 'Decision Support'],
+  ['VISUAL', 'Black / White']
 ];
 
-function drawEditorialTexture(index) {
+function coverTexture(index) {
   const canvas = document.createElement('canvas');
-  canvas.width = 1200;
-  canvas.height = 800;
+  canvas.width = 900;
+  canvas.height = 1200;
   const ctx = canvas.getContext('2d');
+  const inverted = index % 3 === 1;
+  const bg = inverted ? '#111111' : '#fbfbf7';
+  const fg = inverted ? '#f7f7f2' : '#111111';
+  const mid = inverted ? '#363636' : '#d8d8d2';
 
-  const light = index % 2 === 0;
-  ctx.fillStyle = light ? '#f7f7f4' : '#111111';
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = light ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.2)';
+  ctx.strokeStyle = inverted ? 'rgba(255,255,255,.20)' : 'rgba(0,0,0,.16)';
   ctx.lineWidth = 2;
-  ctx.strokeRect(52, 52, canvas.width - 104, canvas.height - 104);
+  ctx.strokeRect(46, 46, canvas.width - 92, canvas.height - 92);
 
-  ctx.fillStyle = light ? '#111111' : '#f7f7f4';
-  ctx.font = '500 34px "Helvetica Neue", Arial, sans-serif';
-  ctx.fillText(String(index + 1).padStart(3, '0'), 86, 118);
+  ctx.fillStyle = fg;
+  ctx.font = '400 42px "Helvetica Neue", Arial, sans-serif';
+  ctx.fillText(String(index + 1).padStart(3, '0'), 72, 118);
 
-  ctx.font = '400 96px "Helvetica Neue", Arial, sans-serif';
-  ctx.letterSpacing = '-4px';
-  const title = projectTitles[index % projectTitles.length];
-  const words = title.split(' ');
-  words.forEach((word, line) => ctx.fillText(word, 86, 460 + line * 92));
+  ctx.save();
+  ctx.translate(72, 760);
+  ctx.fillStyle = fg;
+  ctx.font = '400 118px "Helvetica Neue", Arial, sans-serif';
+  ctx.letterSpacing = '-7px';
+  ctx.fillText(projectTitles[index % projectTitles.length][0], 0, 0);
+  ctx.font = '400 46px "Helvetica Neue", Arial, sans-serif';
+  ctx.letterSpacing = '-2px';
+  ctx.fillStyle = inverted ? 'rgba(247,247,242,.68)' : 'rgba(17,17,17,.58)';
+  ctx.fillText(projectTitles[index % projectTitles.length][1], 4, 64);
+  ctx.restore();
 
-  ctx.globalAlpha = light ? 0.66 : 0.78;
-  ctx.fillStyle = light ? '#d9d9d4' : '#353535';
-  const imageX = 650 + (index % 3) * 22;
-  const imageY = 172 + (index % 2) * 34;
-  ctx.fillRect(imageX, imageY, 330, 420);
-  ctx.globalAlpha = 1;
+  ctx.fillStyle = mid;
+  const imageX = 454 + (index % 2) * 24;
+  const imageY = 184 + (index % 4) * 18;
+  ctx.fillRect(imageX, imageY, 298, 396);
 
-  ctx.strokeStyle = light ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.55)';
-  ctx.beginPath();
-  for (let i = 0; i < 16; i++) {
-    const y = imageY + 34 + i * 23;
-    ctx.moveTo(imageX + 28, y);
-    ctx.lineTo(imageX + 302 - (i % 5) * 20, y);
+  ctx.strokeStyle = inverted ? 'rgba(255,255,255,.50)' : 'rgba(0,0,0,.42)';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 18; i++) {
+    const y = imageY + 38 + i * 18;
+    ctx.beginPath();
+    ctx.moveTo(imageX + 26, y);
+    ctx.lineTo(imageX + 272 - ((i + index) % 6) * 18, y);
+    ctx.stroke();
   }
-  ctx.stroke();
 
-  ctx.font = '400 22px "Helvetica Neue", Arial, sans-serif';
-  ctx.fillStyle = light ? 'rgba(0,0,0,.62)' : 'rgba(255,255,255,.68)';
-  ctx.fillText('PRODUCT DESIGN / UX SYSTEMS / MOTION', 86, 692);
+  ctx.fillStyle = inverted ? 'rgba(247,247,242,.58)' : 'rgba(17,17,17,.50)';
+  ctx.font = '400 24px "Helvetica Neue", Arial, sans-serif';
+  ctx.fillText('PRODUCT DESIGN / UX / SYSTEMS', 72, 1080);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -94,63 +108,73 @@ function drawEditorialTexture(index) {
   return texture;
 }
 
-const panels = [];
-const panelGeometry = new THREE.PlaneGeometry(5.8, 3.86, 24, 16);
+const cards = [];
+const radius = 7.2;
+const cardCount = 10;
+const cardGeometry = new THREE.PlaneGeometry(3.15, 4.2, 24, 24);
+const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x0e0e0e, transparent: true, opacity: 0.14 });
 
-for (let i = 0; i < 18; i++) {
+for (let i = 0; i < cardCount; i++) {
   const material = new THREE.MeshStandardMaterial({
-    map: drawEditorialTexture(i),
+    map: coverTexture(i),
     color: 0xffffff,
-    roughness: 0.86,
+    roughness: 0.72,
     metalness: 0,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.96
+    opacity: 1
   });
+  const mesh = new THREE.Mesh(cardGeometry, material);
+  const angle = (i / cardCount) * Math.PI * 2;
+  mesh.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+  mesh.rotation.y = angle + Math.PI;
+  mesh.userData = { angle, phase: i * 0.7 };
 
-  const mesh = new THREE.Mesh(panelGeometry, material);
-  const lane = (i % 3) - 1;
-  const row = Math.floor(i / 3);
-  mesh.position.set(lane * 3.9, (i % 2 ? -0.42 : 0.42), -row * 5.1);
-  mesh.rotation.set(0, lane * -0.16, lane * 0.025);
-  mesh.userData = {
-    lane,
-    baseX: lane * 3.9,
-    baseY: i % 2 ? -0.42 : 0.42,
-    baseZ: -row * 5.1,
-    phase: i * 0.74,
-    section: row
-  };
-  editorialGroup.add(mesh);
-  panels.push(mesh);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(cardGeometry), edgeMaterial.clone());
+  edges.scale.setScalar(1.006);
+  mesh.add(edges);
+
+  carousel.add(mesh);
+  cards.push(mesh);
 }
 
-const lineMaterial = new THREE.LineBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.18 });
-const depthLines = [];
-for (let i = 0; i < 24; i++) {
-  const geometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(-7.8, -3.8, -i * 2.6),
-    new THREE.Vector3(7.8, -3.8, -i * 2.6)
-  ]);
-  const line = new THREE.Line(geometry, lineMaterial.clone());
-  scene.add(line);
-  depthLines.push(line);
+const orbitLines = [];
+for (let i = 0; i < 5; i++) {
+  const curve = new THREE.EllipseCurve(0, 0, radius + i * 0.18, radius + i * 0.18, 0, Math.PI * 2);
+  const points = curve.getPoints(160).map((point) => new THREE.Vector3(point.x, -2.55 - i * 0.035, point.y));
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const line = new THREE.LineLoop(geometry, new THREE.LineBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.045 }));
+  line.rotation.x = Math.PI / 2;
+  carousel.add(line);
+  orbitLines.push(line);
 }
 
-let targetProgress = 0;
-let progress = 0;
+let targetRotation = 0;
+let rotation = 0;
 let velocity = 0;
 let pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+let touchX = null;
 
-function updateScroll() {
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  targetProgress = max <= 0 ? 0 : window.scrollY / max;
-  const percent = Math.round(targetProgress * 100);
-  progressLine.style.width = `${percent}%`;
-  progressValue.textContent = `${String(percent).padStart(2, '0')}%`;
+function addSpin(delta) {
+  velocity += delta;
+  targetRotation += delta * 0.18;
 }
-window.addEventListener('scroll', updateScroll, { passive: true });
-updateScroll();
+
+window.addEventListener('wheel', (event) => {
+  event.preventDefault();
+  addSpin(THREE.MathUtils.clamp(event.deltaY * 0.0014, -0.36, 0.36));
+}, { passive: false });
+
+window.addEventListener('touchstart', (event) => {
+  touchX = event.touches[0]?.clientX ?? null;
+}, { passive: true });
+
+window.addEventListener('touchmove', (event) => {
+  if (touchX == null) return;
+  const nextX = event.touches[0]?.clientX ?? touchX;
+  addSpin((touchX - nextX) * 0.004);
+  touchX = nextX;
+}, { passive: true });
 
 window.addEventListener('pointermove', (event) => {
   pointer.tx = (event.clientX / window.innerWidth - 0.5) * 2;
@@ -161,23 +185,25 @@ window.addEventListener('pointermove', (event) => {
   }
 });
 
-document.querySelectorAll('a, .button').forEach((el) => {
+document.querySelectorAll('a, .hero-actions span').forEach((el) => {
   el.addEventListener('mouseenter', () => cursorDot?.classList.add('is-active'));
   el.addEventListener('mouseleave', () => cursorDot?.classList.remove('is-active'));
 });
 
 if (!reducedMotion) {
-  gsap.from('.site-header, .hero .eyebrow, .hero h1, .hero .lede, .hero-actions', {
-    y: 22,
+  gsap.from('.site-header, .hero-panel .eyebrow, .hero-panel h1, .hero-panel .lede, .hero-actions', {
+    y: 24,
     opacity: 0,
-    duration: 1.15,
-    stagger: 0.08,
+    duration: 1.08,
+    stagger: 0.075,
     ease: 'power3.out'
   });
-  gsap.from(panels.map((panel) => panel.position), {
-    z: '-=8',
-    duration: 1.8,
-    stagger: { each: 0.035, from: 'start' },
+  gsap.from(cards.map((card) => card.scale), {
+    x: 0.18,
+    y: 0.18,
+    z: 0.18,
+    duration: 1.4,
+    stagger: { each: 0.055, from: 'center' },
     ease: 'expo.out'
   });
 }
@@ -185,41 +211,45 @@ if (!reducedMotion) {
 const clock = new THREE.Clock();
 function animate() {
   const time = clock.getElapsedTime();
-  const previous = progress;
-  progress += (targetProgress - progress) * (reducedMotion ? 0.18 : 0.075);
-  velocity += ((progress - previous) * 80 - velocity) * 0.08;
-  pointer.x += (pointer.tx - pointer.x) * 0.055;
-  pointer.y += (pointer.ty - pointer.y) * 0.055;
+  const idleSpin = reducedMotion ? 0 : 0.0018;
+  targetRotation += idleSpin;
+  rotation += (targetRotation - rotation) * 0.08;
+  velocity *= 0.92;
+  pointer.x += (pointer.tx - pointer.x) * 0.06;
+  pointer.y += (pointer.ty - pointer.y) * 0.06;
 
-  const depth = progress * 34;
-  camera.position.x = pointer.x * 0.62;
-  camera.position.y = pointer.y * 0.38;
-  camera.position.z = 12 - depth;
-  camera.rotation.z = pointer.x * -0.012;
-  camera.lookAt(pointer.x * 0.48, pointer.y * 0.24, camera.position.z - 12);
+  carousel.rotation.y = rotation + pointer.x * 0.12;
+  carousel.rotation.x = pointer.y * -0.055;
+  carousel.position.x = 1.28 + pointer.x * 0.34;
+  carousel.position.y = 0.38 + pointer.y * 0.18;
 
-  panels.forEach((panel, i) => {
-    const data = panel.userData;
-    const localZ = data.baseZ + depth;
-    const pulse = Math.sin(time * 0.85 + data.phase) * 0.12;
-    const drift = Math.sin(time * 0.38 + data.phase) * 0.18;
-    const focus = Math.max(0, 1 - Math.abs(localZ + 7.2) / 9);
+  const speed = Math.min(1, Math.abs(velocity) * 3.2);
+  velocityLine.style.width = `${Math.round(speed * 100)}%`;
+  velocityValue.textContent = String(Math.round(speed * 99)).padStart(2, '0');
 
-    panel.position.x = data.baseX + pointer.x * (0.18 + focus * 0.55) + drift;
-    panel.position.y = data.baseY + pointer.y * (0.12 + focus * 0.22) + pulse;
-    panel.position.z = data.baseZ;
-    panel.rotation.x = pointer.y * 0.035 + Math.sin(time * 0.25 + i) * 0.012;
-    panel.rotation.y = data.lane * -0.16 + pointer.x * 0.045 + velocity * 0.015;
-    panel.rotation.z = data.lane * 0.025 + Math.sin(time * 0.32 + data.phase) * 0.012;
-    panel.material.opacity = 0.18 + focus * 0.82;
-    panel.scale.setScalar(0.86 + focus * 0.2 + Math.min(0.08, Math.abs(velocity) * 0.018));
+  cards.forEach((card, i) => {
+    const worldAngle = card.userData.angle + carousel.rotation.y;
+    const frontness = (Math.cos(worldAngle) + 1) / 2;
+    const parallax = Math.sin(worldAngle) * pointer.x * 0.24;
+    const breathe = Math.sin(time * 0.75 + card.userData.phase) * 0.035;
+
+    card.position.x = Math.sin(card.userData.angle) * radius + parallax;
+    card.position.y = Math.sin(time * 0.55 + card.userData.phase) * 0.11 + pointer.y * frontness * 0.22;
+    card.position.z = Math.cos(card.userData.angle) * radius;
+    card.rotation.y = card.userData.angle + Math.PI + velocity * 0.07;
+    card.rotation.x = pointer.y * 0.035 + breathe;
+    card.rotation.z = pointer.x * -0.012 + Math.sin(time * 0.44 + i) * 0.01;
+    card.scale.setScalar(0.84 + frontness * 0.28 + speed * 0.045);
+    card.material.opacity = 0.28 + frontness * 0.72;
   });
 
-  depthLines.forEach((line, i) => {
-    const wrapped = ((i * 2.6 - depth) % 62 + 62) % 62;
-    line.position.z = 10 - wrapped;
-    line.material.opacity = 0.06 + Math.min(0.14, Math.abs(velocity) * 0.01);
+  orbitLines.forEach((line, i) => {
+    line.material.opacity = 0.028 + speed * 0.03 + i * 0.003;
   });
+
+  camera.position.x = pointer.x * 0.35;
+  camera.position.y = 0.12 + pointer.y * 0.2;
+  camera.lookAt(1.0 + pointer.x * 0.18, 0.1 + pointer.y * 0.12, 0);
 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);

@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Minimal black-and-white Three.js portfolio prototype for Josh Grieve." />
-    <title>Josh Grieve — Spatial Portfolio Prototype</title>
+    <meta name="description" content="Minimal black-and-white spinning Three.js card carousel prototype for Josh Grieve." />
+    <title>Josh Grieve — Parallax Card Carousel</title>
   </head>
   <body>
     <canvas id="webgl" aria-hidden="true"></canvas>
@@ -14,67 +14,25 @@
 
     <header class="site-header">
       <a class="brand" href="#top" aria-label="Back to top">Josh Grieve</a>
-      <nav aria-label="Portfolio sections">
-        <a href="#work">Work</a>
-        <a href="#systems">Systems</a>
-        <a href="#motion">Motion</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <span class="site-note">Senior Product Designer</span>
+      <span class="site-note">Product Design / Systems / Strategy / Craft</span>
     </header>
 
-    <main id="top">
-      <section class="panel hero" data-section="0">
-        <p class="eyebrow">Product Design / Systems / Strategy / Craft</p>
-        <h1>Making complex things feel human.</h1>
-        <p class="lede">A minimal portfolio direction in black and white: editorial typography up front, with a quieter Three.js spatial archive moving beneath the page.</p>
+    <main id="top" class="carousel-section">
+      <section class="hero-panel" aria-label="Spinning card carousel concept">
+        <p class="eyebrow">Single-section motion study</p>
+        <h1>Spinning cards with depth, rhythm, and restraint.</h1>
+        <p class="lede">A black-and-white Three.js carousel direction: editorial project cards rotate through space, parallax with the cursor, and respond to wheel / touch movement.</p>
         <div class="hero-actions">
-          <a href="#work" class="button">View the field</a>
-          <span>Scroll slowly — the work moves through depth.</span>
-        </div>
-      </section>
-
-      <section class="panel" id="work" data-section="1">
-        <p class="eyebrow">01 / Featured work</p>
-        <div class="copy">
-          <h2>Work samples as sequenced editorial frames.</h2>
-          <p>Instead of a traditional portfolio grid, each project can move through a deep 3D camera path — closer to rhythmic image sequencing than floating cards.</p>
-        </div>
-      </section>
-
-      <section class="panel" id="systems" data-section="2">
-        <p class="eyebrow">02 / Design systems</p>
-        <div class="copy">
-          <h2>Structure first. Expression second.</h2>
-          <ul class="meta-list">
-            <li>Helvetica Neue, generous spacing, black-and-white restraint.</li>
-            <li>Project frames can become real case-study imagery later.</li>
-            <li>Motion supports wayfinding without overpowering the work.</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="panel" id="motion" data-section="3">
-        <p class="eyebrow">03 / Motion study</p>
-        <div class="copy">
-          <h2>Deep 3D transitions with a calm editorial surface.</h2>
-          <p>The Instagram reference is partially login-blocked, but the visible caption points toward deep 3D depth transitions, sleek copy layout, and rhythmic image sequencing — this prototype now leans in that direction.</p>
-        </div>
-      </section>
-
-      <section class="panel outro" id="contact" data-section="4">
-        <p class="eyebrow">04 / Next</p>
-        <div class="copy">
-          <h2>Keep it minimal until the content earns more.</h2>
-          <p>Next pass: replace placeholder frames with actual project stills from Dolly, Kelley Blue Book, Netgear, and selected experiments.</p>
+          <span>Move your cursor</span>
+          <span>Scroll or swipe to spin</span>
         </div>
       </section>
     </main>
 
-    <aside class="hud" aria-label="Experience status">
-      <span class="hud-label">Scroll depth</span>
+    <aside class="hud" aria-label="Carousel status">
+      <span class="hud-label">Carousel velocity</span>
       <div class="meter"><span></span></div>
-      <span class="hud-value">00%</span>
+      <span class="hud-value">00</span>
     </aside>
 
     <script type="module" src="/src/main.js"></script>
