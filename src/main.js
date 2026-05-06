@@ -3,134 +3,151 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 
 const canvas = document.querySelector('#webgl');
-const hudBar = document.querySelector('.meter span');
-const hudValue = document.querySelector('.hud-value');
+const progressLine = document.querySelector('.meter span');
+const progressValue = document.querySelector('.hud-value');
 const cursorDot = document.querySelector('.cursor-dot');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x0b0b08, 0.055);
+scene.background = new THREE.Color(0xf4f4f1);
+scene.fog = new THREE.Fog(0xf4f4f1, 10, 52);
 
-const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 120);
-camera.position.set(0, 0.4, 12);
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 90);
+camera.position.set(0, 0, 12);
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  alpha: false,
+  powerPreference: 'high-performance'
+});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-const root = new THREE.Group();
-scene.add(root);
-
-const ambient = new THREE.AmbientLight(0xf0eadb, 1.25);
-scene.add(ambient);
-const keyLight = new THREE.PointLight(0xe8c873, 13, 50, 1.8);
-keyLight.position.set(-3, 4, 6);
+scene.add(new THREE.AmbientLight(0xffffff, 2.25));
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+keyLight.position.set(-3, 5, 7);
 scene.add(keyLight);
-const coolLight = new THREE.PointLight(0x9fb4ff, 7, 44, 2);
-coolLight.position.set(5, -2, -4);
-scene.add(coolLight);
 
-const palette = [0xddd8ca, 0xb7b0a2, 0x7f817d, 0xe8c873, 0x9fb4ff];
-const cards = [];
-const cardGeometry = new THREE.PlaneGeometry(1, 1, 10, 10);
-const lineMaterial = new THREE.LineBasicMaterial({ color: 0xede8dc, transparent: true, opacity: 0.22 });
+const editorialGroup = new THREE.Group();
+scene.add(editorialGroup);
 
-function makeCardLabel(index) {
+const projectTitles = [
+  'DOLLY',
+  'DEAL ADVISOR',
+  'NETWORK SOLUTION',
+  'SYSTEMS',
+  'STRATEGY',
+  'CRAFT',
+  'RESEARCH',
+  'PROTOTYPES'
+];
+
+function drawEditorialTexture(index) {
   const canvas = document.createElement('canvas');
-  canvas.width = 768;
-  canvas.height = 512;
+  canvas.width = 1200;
+  canvas.height = 800;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#d7d1c4';
+
+  const light = index % 2 === 0;
+  ctx.fillStyle = light ? '#f7f7f4' : '#111111';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = index % 4 === 0 ? '#11110e' : '#3a3832';
-  ctx.globalAlpha = 0.18;
-  for (let i = 0; i < 9; i++) {
-    const w = 80 + Math.random() * 420;
-    ctx.fillRect(54, 58 + i * 42, w, 9 + Math.random() * 12);
-  }
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = 'rgba(17,17,14,.36)';
+
+  ctx.strokeStyle = light ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.2)';
   ctx.lineWidth = 2;
-  ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48);
-  ctx.fillStyle = 'rgba(17,17,14,.76)';
-  ctx.font = '700 24px ui-sans-serif, system-ui';
-  ctx.letterSpacing = '6px';
-  ctx.fillText(`CASE ${String(index + 1).padStart(2, '0')}`, 54, 454);
-  return new THREE.CanvasTexture(canvas);
+  ctx.strokeRect(52, 52, canvas.width - 104, canvas.height - 104);
+
+  ctx.fillStyle = light ? '#111111' : '#f7f7f4';
+  ctx.font = '500 34px "Helvetica Neue", Arial, sans-serif';
+  ctx.fillText(String(index + 1).padStart(3, '0'), 86, 118);
+
+  ctx.font = '400 96px "Helvetica Neue", Arial, sans-serif';
+  ctx.letterSpacing = '-4px';
+  const title = projectTitles[index % projectTitles.length];
+  const words = title.split(' ');
+  words.forEach((word, line) => ctx.fillText(word, 86, 460 + line * 92));
+
+  ctx.globalAlpha = light ? 0.66 : 0.78;
+  ctx.fillStyle = light ? '#d9d9d4' : '#353535';
+  const imageX = 650 + (index % 3) * 22;
+  const imageY = 172 + (index % 2) * 34;
+  ctx.fillRect(imageX, imageY, 330, 420);
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = light ? 'rgba(0,0,0,.45)' : 'rgba(255,255,255,.55)';
+  ctx.beginPath();
+  for (let i = 0; i < 16; i++) {
+    const y = imageY + 34 + i * 23;
+    ctx.moveTo(imageX + 28, y);
+    ctx.lineTo(imageX + 302 - (i % 5) * 20, y);
+  }
+  ctx.stroke();
+
+  ctx.font = '400 22px "Helvetica Neue", Arial, sans-serif';
+  ctx.fillStyle = light ? 'rgba(0,0,0,.62)' : 'rgba(255,255,255,.68)';
+  ctx.fillText('PRODUCT DESIGN / UX SYSTEMS / MOTION', 86, 692);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return texture;
 }
 
-for (let i = 0; i < 34; i++) {
-  const aspect = 0.72 + Math.random() * 0.92;
+const panels = [];
+const panelGeometry = new THREE.PlaneGeometry(5.8, 3.86, 24, 16);
+
+for (let i = 0; i < 18; i++) {
   const material = new THREE.MeshStandardMaterial({
-    color: palette[i % palette.length],
-    roughness: 0.78,
-    metalness: 0.04,
+    map: drawEditorialTexture(i),
+    color: 0xffffff,
+    roughness: 0.86,
+    metalness: 0,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.82,
-    map: makeCardLabel(i)
+    opacity: 0.96
   });
-  const mesh = new THREE.Mesh(cardGeometry, material);
-  const angle = (i / 34) * Math.PI * 2;
-  const ring = 5.2 + (i % 7) * 0.58 + Math.random() * 1.6;
-  const y = (Math.random() - 0.5) * 8.6;
-  mesh.scale.set(1.45 * aspect, 1.45, 1);
-  mesh.position.set(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
-  mesh.rotation.set(Math.random() * 0.6, -angle + Math.PI / 2, (Math.random() - 0.5) * 0.25);
+
+  const mesh = new THREE.Mesh(panelGeometry, material);
+  const lane = (i % 3) - 1;
+  const row = Math.floor(i / 3);
+  mesh.position.set(lane * 3.9, (i % 2 ? -0.42 : 0.42), -row * 5.1);
+  mesh.rotation.set(0, lane * -0.16, lane * 0.025);
   mesh.userData = {
-    baseAngle: angle,
-    angle,
-    ring,
-    y,
-    speed: 0.08 + Math.random() * 0.16,
-    drift: Math.random() * Math.PI * 2,
-    focus: Math.random()
+    lane,
+    baseX: lane * 3.9,
+    baseY: i % 2 ? -0.42 : 0.42,
+    baseZ: -row * 5.1,
+    phase: i * 0.74,
+    section: row
   };
-  root.add(mesh);
-  cards.push(mesh);
-
-  const edges = new THREE.EdgesGeometry(cardGeometry);
-  const wire = new THREE.LineSegments(edges, lineMaterial.clone());
-  wire.scale.copy(mesh.scale).multiplyScalar(1.01);
-  mesh.add(wire);
+  editorialGroup.add(mesh);
+  panels.push(mesh);
 }
 
-const starGeometry = new THREE.BufferGeometry();
-const starCount = 900;
-const starPositions = new Float32Array(starCount * 3);
-for (let i = 0; i < starCount; i++) {
-  const r = 18 + Math.random() * 48;
-  const a = Math.random() * Math.PI * 2;
-  starPositions[i * 3 + 0] = Math.cos(a) * r;
-  starPositions[i * 3 + 1] = (Math.random() - 0.5) * 34;
-  starPositions[i * 3 + 2] = Math.sin(a) * r;
-}
-starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xede8dc, size: 0.024, transparent: true, opacity: 0.48 }));
-scene.add(stars);
-
-const tunnelGeometry = new THREE.TorusGeometry(9, 0.006, 8, 180);
-const tunnelMaterial = new THREE.MeshBasicMaterial({ color: 0xe8c873, transparent: true, opacity: 0.08 });
-const rings = [];
-for (let i = 0; i < 16; i++) {
-  const ring = new THREE.Mesh(tunnelGeometry, tunnelMaterial.clone());
-  ring.position.z = -26 + i * 3.5;
-  ring.rotation.x = Math.PI / 2;
-  scene.add(ring);
-  rings.push(ring);
+const lineMaterial = new THREE.LineBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.18 });
+const depthLines = [];
+for (let i = 0; i < 24; i++) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-7.8, -3.8, -i * 2.6),
+    new THREE.Vector3(7.8, -3.8, -i * 2.6)
+  ]);
+  const line = new THREE.Line(geometry, lineMaterial.clone());
+  scene.add(line);
+  depthLines.push(line);
 }
 
-let scrollProgress = 0;
 let targetProgress = 0;
+let progress = 0;
 let velocity = 0;
 let pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
 function updateScroll() {
   const max = document.documentElement.scrollHeight - window.innerHeight;
   targetProgress = max <= 0 ? 0 : window.scrollY / max;
-  hudBar.style.width = `${Math.round(targetProgress * 100)}%`;
-  hudValue.textContent = `${String(Math.round(targetProgress * 100)).padStart(2, '0')}%`;
+  const percent = Math.round(targetProgress * 100);
+  progressLine.style.width = `${percent}%`;
+  progressValue.textContent = `${String(percent).padStart(2, '0')}%`;
 }
 window.addEventListener('scroll', updateScroll, { passive: true });
 updateScroll();
@@ -145,67 +162,63 @@ window.addEventListener('pointermove', (event) => {
 });
 
 document.querySelectorAll('a, .button').forEach((el) => {
-  el.addEventListener('mouseenter', () => cursorDot?.style.setProperty('width', '34px'));
-  el.addEventListener('mouseleave', () => cursorDot?.style.setProperty('width', '13px'));
+  el.addEventListener('mouseenter', () => cursorDot?.classList.add('is-active'));
+  el.addEventListener('mouseleave', () => cursorDot?.classList.remove('is-active'));
 });
 
-function intro() {
-  gsap.from('.hero .eyebrow, .hero h1, .hero .lede, .hero-actions', {
-    y: 34,
+if (!reducedMotion) {
+  gsap.from('.site-header, .hero .eyebrow, .hero h1, .hero .lede, .hero-actions', {
+    y: 22,
     opacity: 0,
-    duration: 1.25,
-    stagger: 0.12,
+    duration: 1.15,
+    stagger: 0.08,
     ease: 'power3.out'
   });
-  gsap.from(cards.map((card) => card.scale), {
-    x: 0.001,
-    y: 0.001,
-    duration: 1.65,
-    stagger: { each: 0.02, from: 'random' },
+  gsap.from(panels.map((panel) => panel.position), {
+    z: '-=8',
+    duration: 1.8,
+    stagger: { each: 0.035, from: 'start' },
     ease: 'expo.out'
   });
 }
-if (!reducedMotion) intro();
 
 const clock = new THREE.Clock();
 function animate() {
-  const t = clock.getElapsedTime();
-  const previous = scrollProgress;
-  scrollProgress += (targetProgress - scrollProgress) * 0.075;
-  velocity += ((scrollProgress - previous) * 70 - velocity) * 0.08;
-  pointer.x += (pointer.tx - pointer.x) * 0.05;
-  pointer.y += (pointer.ty - pointer.y) * 0.05;
+  const time = clock.getElapsedTime();
+  const previous = progress;
+  progress += (targetProgress - progress) * (reducedMotion ? 0.18 : 0.075);
+  velocity += ((progress - previous) * 80 - velocity) * 0.08;
+  pointer.x += (pointer.tx - pointer.x) * 0.055;
+  pointer.y += (pointer.ty - pointer.y) * 0.055;
 
-  const scrollDepth = scrollProgress * 28;
-  camera.position.x = pointer.x * 0.42;
-  camera.position.y = 0.35 + pointer.y * 0.32 + Math.sin(t * 0.3) * 0.08;
-  camera.position.z = 12 - scrollDepth * 0.18;
-  camera.rotation.z = pointer.x * -0.018;
-  camera.lookAt(pointer.x * 0.25, pointer.y * 0.2, -scrollDepth * 0.23);
+  const depth = progress * 34;
+  camera.position.x = pointer.x * 0.62;
+  camera.position.y = pointer.y * 0.38;
+  camera.position.z = 12 - depth;
+  camera.rotation.z = pointer.x * -0.012;
+  camera.lookAt(pointer.x * 0.48, pointer.y * 0.24, camera.position.z - 12);
 
-  root.rotation.y = scrollProgress * Math.PI * 2.25 + pointer.x * 0.12;
-  root.rotation.x = pointer.y * 0.06;
-  stars.rotation.y = -scrollProgress * 0.7 + t * 0.008;
+  panels.forEach((panel, i) => {
+    const data = panel.userData;
+    const localZ = data.baseZ + depth;
+    const pulse = Math.sin(time * 0.85 + data.phase) * 0.12;
+    const drift = Math.sin(time * 0.38 + data.phase) * 0.18;
+    const focus = Math.max(0, 1 - Math.abs(localZ + 7.2) / 9);
 
-  const energy = reducedMotion ? 0.12 : Math.min(1.4, Math.abs(velocity) * 1.2 + 0.2);
-  cards.forEach((card, i) => {
-    const d = card.userData;
-    const sectionBias = Math.sin((scrollProgress * 4 + d.focus) * Math.PI);
-    const radius = d.ring + sectionBias * 1.2 + energy * 0.75;
-    const angle = d.baseAngle + t * d.speed + scrollProgress * (1.4 + (i % 5) * 0.18);
-    card.position.x = Math.cos(angle) * radius + pointer.x * (i % 2 ? 0.25 : -0.25);
-    card.position.z = Math.sin(angle) * radius - scrollProgress * 18 + Math.sin(t * 0.25 + d.drift) * 0.35;
-    card.position.y = d.y + Math.sin(t * 0.5 + d.drift + scrollProgress * 8) * (0.25 + energy * 0.25);
-    card.rotation.y = -angle + Math.PI / 2 + pointer.x * 0.08;
-    card.rotation.x = Math.sin(t * 0.4 + i) * 0.06 + pointer.y * 0.06;
-    card.rotation.z = Math.sin(t * 0.33 + d.drift) * 0.045;
-    card.material.opacity = 0.48 + Math.min(0.42, 0.18 + energy * 0.15);
+    panel.position.x = data.baseX + pointer.x * (0.18 + focus * 0.55) + drift;
+    panel.position.y = data.baseY + pointer.y * (0.12 + focus * 0.22) + pulse;
+    panel.position.z = data.baseZ;
+    panel.rotation.x = pointer.y * 0.035 + Math.sin(time * 0.25 + i) * 0.012;
+    panel.rotation.y = data.lane * -0.16 + pointer.x * 0.045 + velocity * 0.015;
+    panel.rotation.z = data.lane * 0.025 + Math.sin(time * 0.32 + data.phase) * 0.012;
+    panel.material.opacity = 0.18 + focus * 0.82;
+    panel.scale.setScalar(0.86 + focus * 0.2 + Math.min(0.08, Math.abs(velocity) * 0.018));
   });
 
-  rings.forEach((ring, i) => {
-    ring.position.z = ((i * 3.5 - 34 + scrollProgress * 36) % 56) - 28;
-    ring.rotation.z = t * 0.06 + i * 0.2;
-    ring.material.opacity = 0.035 + energy * 0.03;
+  depthLines.forEach((line, i) => {
+    const wrapped = ((i * 2.6 - depth) % 62 + 62) % 62;
+    line.position.z = 10 - wrapped;
+    line.material.opacity = 0.06 + Math.min(0.14, Math.abs(velocity) * 0.01);
   });
 
   renderer.render(scene, camera);
