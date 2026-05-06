@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Lofi experimental Three.js portfolio prototype for a Creative / Product UX Designer." />
+    <title>Test1 — Orbiting Case Study Field</title>
+  </head>
+  <body>
+    <canvas id="webgl" aria-hidden="true"></canvas>
+
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor-dot" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Back to top">TEST1</a>
+      <nav aria-label="Portfolio sections">
+        <a href="#field">Field</a>
+        <a href="#process">Process</a>
+        <a href="#archive">Archive</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="panel hero" data-section="0">
+        <p class="eyebrow">Creative / Product UX Designer</p>
+        <h1>Interfaces that behave like places.</h1>
+        <p class="lede">A lofi spatial portfolio prototype: case-study frames orbit the visitor, react to scroll velocity, and form a navigable field of work.</p>
+        <div class="hero-actions">
+          <a href="#field" class="button">Enter the field</a>
+          <span>Scroll slowly — the archive rearranges itself.</span>
+        </div>
+      </section>
+
+      <section class="panel split" id="field" data-section="1">
+        <div>
+          <p class="eyebrow">01 / Spatial archive</p>
+          <h2>Work samples float around the viewer instead of sitting in a grid.</h2>
+        </div>
+        <p>Each grey plane is a placeholder for a product screen, launch still, research artifact, or motion study. As final imagery arrives, the planes can become textured cards with shader treatments and case-study routing.</p>
+      </section>
+
+      <section class="panel manifesto" id="process" data-section="2">
+        <p class="eyebrow">02 / Design posture</p>
+        <h2>Research as atmosphere. Prototypes as evidence. Motion as wayfinding.</h2>
+        <ul>
+          <li>Scroll changes camera depth, orbit radius, and editorial tone.</li>
+          <li>Hover/drag intent can later “pull” a project into focus.</li>
+          <li>Reduced motion users get a calmer, legible experience.</li>
+        </ul>
+      </section>
+
+      <section class="panel split reverse" id="archive" data-section="3">
+        <div>
+          <p class="eyebrow">03 / Case-study choreography</p>
+          <h2>Instead of revealing cards, the user passes through constellations.</h2>
+        </div>
+        <p>The next iteration should map each cluster to a designer strength: product strategy, UX systems, visual craft, experiments, and shipped outcomes.</p>
+      </section>
+
+      <section class="panel outro" id="contact" data-section="4">
+        <p class="eyebrow">04 / Closing</p>
+        <h2>Make the portfolio feel discovered, not browsed.</h2>
+        <p>Prototype v0.1. Grey boxes today, image-driven cinematic portfolio tomorrow.</p>
+      </section>
+    </main>
+
+    <aside class="hud" aria-label="Experience status">
+      <span class="hud-label">Scroll depth</span>
+      <div class="meter"><span></span></div>
+      <span class="hud-value">00%</span>
+    </aside>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
